@@ -1,0 +1,15 @@
+### .env format
+
+```
+PORT=3000
+DATABASE_URL=""
+FRONTEND_URL="http://localhost:5173"
+JWT_PASSWORD=""
+OPENAI_API_KEY=""
+NODE_ENV="production"
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_REGION=
+S3_BUCKET_NAME=
+```

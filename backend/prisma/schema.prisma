@@ -1,0 +1,151 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+enum AccountType {
+    CLIENT
+    FREELANCER
+}
+
+enum JobStatus {
+    OPEN
+    PROGRESS
+    COMPLETED
+}
+
+enum ConnectsFibonacci {
+    ONE
+    TWO
+    THREE
+    FIVE
+    EIGHT
+}
+
+enum SupportedCurrency {
+    INR
+    USD
+    EUR
+}
+
+enum PaymentType {
+    FULL
+    HOURLY
+}
+
+model Client {
+    id                            Int                           @id @default(autoincrement())
+    email                         String                        @unique
+    fullName                      String
+    profilePicture                String?
+    rating                        Float?                        // TBC
+    accountType                   AccountType                   @default(CLIENT)
+
+    jobs                          Job[]
+
+    createdAt                     DateTime                      @default(now())
+}
+
+model Freelancer {
+    id                            Int                           @id @default(autoincrement())
+    email                         String                        @unique
+    fullName                      String
+    bio                           String?
+    resume                        String?
+    profilePicture                String?
+    skills                        FreelancerSkills[]
+    rating                        Float? // TBC
+    accountType                   AccountType                   @default(FREELANCER)
+    connects                      Int                           @default(60)
+    createdAt                     DateTime                      @default(now())
+
+    jobQuestions                  FreelancerJobQuestions[]
+    jobApplications               FreelancersOnApplications[]
+    jobs                          FreelancersOnJob[]
+}
+
+model Job {
+    id                            Int                           @id @default(autoincrement())
+    status                        JobStatus                     @default(OPEN) // Next migration
+    title                         String
+    description                   String
+    connectsRequired              ConnectsFibonacci
+    skillsRequired                JobRequiredSkills[]
+    currency                      SupportedCurrency
+    approxAmount                  Float
+    maxAmount                     Float
+    paymentType                   PaymentType
+    applicationDeadline           DateTime
+
+    client                        Client                        @relation(fields: [clientId], references: [id])
+    clientId                      Int
+
+    questions                     FreelancerJobQuestions[]
+    applicants                    FreelancersOnApplications[]
+    freelancers                   FreelancersOnJob[]
+
+    createdAt                     DateTime                      @default(now()) // Next migration
+}
+
+model FreelancerJobQuestions {
+    id                            Int                           @id @default(autoincrement())
+    job                           Job                           @relation(fields: [jobId], references: [id])
+    jobId                         Int
+    freelancer                    Freelancer                    @relation(fields: [freelancerId], references: [id])
+    freelancerId                  Int
+    question                      String
+    reply                         String?
+    public                        Boolean                       @default(true)
+}
+
+model FreelancersOnApplications {
+    id                            Int                           @id @default(autoincrement())
+    job                           Job                           @relation(fields: [jobId], references: [id])
+    jobId                         Int
+    freelancer                    Freelancer                    @relation(fields: [freelancerId], references: [id])
+    freelancerId                  Int
+    message                       String
+    amount                        Float 
+}
+
+model FreelancersOnJob {
+    id                            Int                           @id @default(autoincrement())
+    job                           Job                           @relation(fields: [jobId], references: [id])
+    jobId                         Int
+    freelancer                    Freelancer                    @relation(fields: [freelancerId], references: [id])
+    freelancerId                  Int
+    agreedAmount                  Float
+}
+
+model Skill {
+    id                            Int                           @id @default(autoincrement())
+    name                          String                        @unique
+    freelancers                   FreelancerSkills[]
+    jobs                          JobRequiredSkills[]
+}
+
+model JobRequiredSkills {
+    id                            Int                           @id @default(autoincrement())
+    job                           Job                           @relation(fields: [jobId], references: [id])
+    jobId                         Int
+    skill                         Skill                         @relation(fields: [skillId], references: [id])
+    skillId                       Int
+}
+
+model FreelancerSkills {
+    id                            Int                           @id @default(autoincrement())
+    freelancer                    Freelancer                    @relation(fields: [freelancerId], references: [id])
+    freelancerId                  Int
+    skill                         Skill                         @relation(fields: [skillId], references: [id])
+    skillId                       Int
+}
